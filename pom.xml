@@ -12,7 +12,7 @@
 	<artifactId>account-msf</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>account-msf</name>
-	<description>Microservicio que se encarga de </description>
+	<description>Microservicio que se encarga de las cuentas del banco</description>
 	<properties>
 		<java.version>17</java.version>
 		<spring-cloud.version>2022.0.3</spring-cloud.version>
