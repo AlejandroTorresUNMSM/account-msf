@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: account-msf-dev
+  cloud:
+    config:
+      uri: http://localhost:8888
+client:
+  ms:
+    url: CLIENT-MSF/api/client
+prodactive:
+  ms:
+    url: http://localhost:8082/api/credit
