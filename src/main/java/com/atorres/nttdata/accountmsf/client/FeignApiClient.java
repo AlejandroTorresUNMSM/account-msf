@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import reactivefeign.spring.config.ReactiveFeignClient;
 import reactor.core.publisher.Flux;
 
-@ReactiveFeignClient(value = "client-ms", url = "${client.ms.url}/")
+@ReactiveFeignClient(name = "client-msf", url = "${client.ms.url}/")
 public interface FeignApiClient {
 	@GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	Flux<ClientDto> getAllClients();

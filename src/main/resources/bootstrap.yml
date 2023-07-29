@@ -6,7 +6,7 @@ spring:
       uri: http://localhost:8888
 client:
   ms:
-    url: CLIENT-MSF/api/client
+    url: http://localhost:8080/api/client
 prodactive:
   ms:
     url: http://localhost:8082/api/credit

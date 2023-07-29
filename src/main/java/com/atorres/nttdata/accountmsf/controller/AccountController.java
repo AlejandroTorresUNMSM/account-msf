@@ -27,7 +27,11 @@ public class AccountController {
 		return feignApiClient.getAllClients()
 				.doOnNext(account -> log.info("Cliente encontrado"));
 	}
-
+	@GetMapping(value = "/clientes/{clientId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public Flux<ClientDto> getClientes(@PathVariable String clientId){
+		return feignApiClient.getClient(clientId)
+				.doOnNext(account -> log.info("Cliente encontrado"));
+	}
 
 
 	/**
