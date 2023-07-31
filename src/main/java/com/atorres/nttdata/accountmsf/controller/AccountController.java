@@ -6,12 +6,14 @@ import com.atorres.nttdata.accountmsf.model.RequestUpdateAccount;
 import com.atorres.nttdata.accountmsf.model.clientms.ClientDto;
 import com.atorres.nttdata.accountmsf.model.dto.AccountDto;
 import com.atorres.nttdata.accountmsf.service.AccountService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
 
 @RestController
 @RequestMapping("/api/account")
@@ -22,17 +24,16 @@ public class AccountController {
 	@Autowired
 	private FeignApiClient feignApiClient;
 
+	/**
+	 * Metodo prueba para testear Resilience4J
+	 * @return clientes
+	 */
+	@CircuitBreaker(name = "resilienceAlternativo" , fallbackMethod = "metodoAlternativo")
 	@GetMapping(value = "/clientes",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<ClientDto> getClientes(){
 		return feignApiClient.getAllClients()
 				.doOnNext(account -> log.info("Cliente encontrado"));
 	}
-	@GetMapping(value = "/clientes/{clientId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Flux<ClientDto> getClientes(@PathVariable String clientId){
-		return feignApiClient.getClient(clientId)
-				.doOnNext(account -> log.info("Cliente encontrado"));
-	}
-
 
 	/**
 	 * Metodo para traer la cuenta
@@ -51,6 +52,7 @@ public class AccountController {
 	 * @param id id del cliente
 	 * @return devuelve una lista de cuentas
 	 */
+	@CircuitBreaker(name = "resilienceAlternativo" , fallbackMethod = "metodoAlternativo")
 	@GetMapping(value = "/client/{id}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<AccountDto> getAllAccountClient(@PathVariable String id){
 		return accountService.getAllAccountsByClient(id)
@@ -88,5 +90,16 @@ public class AccountController {
 	public Mono<AccountDto> updateAccount(@RequestBody Mono<RequestUpdateAccount> request){
 		return request.flatMap(account -> accountService.update(account)
 						.doOnSuccess(v -> log.info("Cuenta actualizada con exito")));
+	}
+
+	/**
+	 * Circuit Breaker metodo alternativo
+	 * @param throwable excepcion
+	 * @return ClientDtos
+	 */
+	private Flux<ClientDto> metodoAlternativo(Throwable throwable) {
+		log.error("Error en la llamada a feignApiClient.getAllClients(): " + throwable.getMessage());
+		// Puedes devolver una respuesta de fallback, por ejemplo, una lista vacía o un flujo con algunos datos predeterminados
+		return Flux.empty();
 	}
 }
