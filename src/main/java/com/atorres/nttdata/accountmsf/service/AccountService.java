@@ -22,6 +22,11 @@ import reactor.core.publisher.Mono;
 @Service
 @Slf4j
 public class AccountService {
+	/**
+	 * Kafka Producer
+	 */
+	@Autowired
+	private KafkaStringProducer kafkaStringProducer;
   /**
    *Repositorio cuentas
    */
@@ -58,7 +63,8 @@ public class AccountService {
             .filter(ac -> ac.getId().equals(productId))
             .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No existe la cuenta")))
             .single()
-						.map(requestMapper::accountToDto);
+						.map(requestMapper::accountToDto)
+						.doOnSuccess(v->kafkaStringProducer.sendMessage("Cuentas encontradas con exito"));
   }
 
   /**
@@ -82,7 +88,8 @@ public class AccountService {
 						.flatMap(exist -> Boolean.FALSE.equals(exist)
 										? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La cuenta no cumplen los requisitos"))
 										: accountRepository.save(requestMapper.accountToDao(requestAccount,clientId)))
-						.map(requestMapper::accountToDto);
+						.map(requestMapper::accountToDto)
+						.doOnSuccess(v->kafkaStringProducer.sendMessage("Cuenta creada con exito"));
   }
 
   /**
@@ -94,7 +101,8 @@ public class AccountService {
     return accountRepository.findAll()
 						.filter(ac -> ac.getClient().equals(clientId))
 						.map(requestMapper::accountToDto)
-						.switchIfEmpty(Flux.empty());
+						.switchIfEmpty(Flux.empty())
+						.doOnComplete(()->kafkaStringProducer.sendMessage("Cuentas de un cliente encontrado con exito"));
   }
 
   /**
